@@ -222,7 +222,20 @@ $(document).ready(function () {
                     totalOffHeapStorageMemory: 0
                 };
 
+                var peakMemoryMetrics = {
+                    JVMHeapMemory: 0,
+                    JVMOffHeapMemory: 0,
+                    OnHeapExecutionMemory: 0,
+                    OffHeapExecutionMemory: 0,
+                    OnHeapStorageMemory: 0,
+                    OffHeapStorageMemory: 0,
+                    DirectPoolMemory: 0,
+                    MappedPoolMemory: 0
+
+                };
+
                 exec.memoryMetrics = exec.hasOwnProperty('memoryMetrics') ? exec.memoryMetrics : memoryMetrics;
+                exec.peakMemoryMetrics = exec.hasOwnProperty('peakMemoryMetrics')? exec.peakMemoryMetrics: peakMemoryMetrics ;
             });
 
             response.forEach(function (exec) {
