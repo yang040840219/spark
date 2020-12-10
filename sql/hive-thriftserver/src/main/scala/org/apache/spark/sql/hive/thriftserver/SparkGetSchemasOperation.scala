@@ -77,7 +77,7 @@ private[hive] class SparkGetSchemasOperation(
       }
 
       val globalTempViewDb = sqlContext.sessionState.catalog.globalTempViewManager.database
-      val databasePattern = Pattern.compile(CLIServiceUtils.patternToRegex(schemaName))
+      val databasePattern = Pattern.compile(CLIServiceUtils.patternToRegex(convertSchemaName))
       if (schemaName == null || schemaName.isEmpty ||
           databasePattern.matcher(globalTempViewDb).matches()) {
         rowSet.addRow(Array[AnyRef](globalTempViewDb, DEFAULT_HIVE_CATALOG))
