@@ -19,12 +19,12 @@ package org.apache.spark.sql.hive.thriftserver
 
 import java.util.regex.Pattern
 
+import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hive.service.cli._
 import org.apache.hive.service.cli.operation.GetSchemasOperation
 import org.apache.hive.service.cli.operation.MetadataOperation.DEFAULT_HIVE_CATALOG
 import org.apache.hive.service.cli.session.HiveSession
-
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SQLContext
 
@@ -67,7 +67,11 @@ private[hive] class SparkGetSchemasOperation(
       parentSession.getUsername)
 
     try {
-      val schemaPattern = convertSchemaPattern(schemaName)
+      var convertSchemaName = schemaName
+      if ("*".equals(convertSchemaName)) {
+        convertSchemaName = null ;
+      }
+      val schemaPattern = convertSchemaPattern(convertSchemaName)
       sqlContext.sessionState.catalog.listDatabases(schemaPattern).foreach { dbName =>
         rowSet.addRow(Array[AnyRef](dbName, DEFAULT_HIVE_CATALOG))
       }

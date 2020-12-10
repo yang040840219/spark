@@ -106,6 +106,8 @@
     <module>external/kafka-0-10-assembly</module>
     <module>external/kafka-0-10-sql</module>
     <module>external/avro</module>
+    <module>spark-manual</module>
+    <module>sql/hive-thriftserver</module>
     <!-- See additional modules enabled by profiles below -->
   </modules>
 
@@ -257,15 +259,18 @@
     <!-- Needed for consistent times -->
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss z</maven.build.timestamp.format>
   </properties>
-  <repositories>
+  <repositories> 
     <repository>
       <id>gcs-maven-central-mirror</id>
       <!--
         Google Mirror of Maven Central, placed first so that it's used instead of flaky Maven Central.
         See https://storage-download.googleapis.com/maven-central/index.html
-      -->
-      <name>GCS Maven Central mirror</name>
-      <url>https://maven-central.storage-download.googleapis.com/maven2/</url>
+        -->
+        <name>GCS Maven Central mirror</name>
+        <!--
+        <url>https://maven-central.storage-download.googleapis.com/maven2/</url>
+        -->
+        <url>https://maven.aliyun.com/repository/central</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -273,6 +278,7 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+
     <repository>
       <!--
         This is used as a fallback when the first try fails.
@@ -296,7 +302,8 @@
         See https://storage-download.googleapis.com/maven-central/index.html
       -->
       <name>GCS Maven Central mirror</name>
-      <url>https://maven-central.storage-download.googleapis.com/maven2/</url>
+<!--      <url>https://maven-central.storage-download.googleapis.com/maven2/</url>-->
+      <url>https://maven.aliyun.com/repository/central</url>
       <releases>
         <enabled>true</enabled>
       </releases>
