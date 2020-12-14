@@ -13,7 +13,7 @@ class ShuffleSuite extends AnyFunSuite with Log {
 	val warehouseLocation = "/opt/data/warehouse"
 
 	lazy val spark = SparkSession.builder()
-		.master("local[2]")
+		.master("local[3]")
 		.config("spark.sql.warehouse.dir", warehouseLocation)
   	.config("spark.shuffle.compress", "false")
   	.config("spark.local.dir", s"/opt/data/spark/shuffle/${Random.nextInt(1000)}")
