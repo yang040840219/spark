@@ -8,7 +8,8 @@ import org.apache.spark.SparkFunSuite
 import org.apache.spark.sql.Print
 import org.apache.spark.util.UninterruptibleThread
 import org.mockito.ArgumentMatchers.{eq => meq}
-import org.mockito.Mockito.{mock, when}
+import org.mockito.Mockito
+import org.mockito.Mockito.{mock, spy, when}
 
 
 class BaseSuite extends SparkFunSuite {
@@ -66,11 +67,17 @@ class BaseSuite extends SparkFunSuite {
 
 	class LoginService {
 		def login(name:String): Boolean = {
+			println("login .....")
 			if("a".equals(name)){
 				true
 			} else {
 				false
 			}
+		}
+
+		def service(): String = {
+			println("service ....")
+			"real service"
 		}
 
 		def login(form:Form): Boolean = {
@@ -84,13 +91,31 @@ class BaseSuite extends SparkFunSuite {
 
 	test("mock") {
 		val mockLoginService = mock(classOf[LoginService])
+
+		// mock 产生的实例，无法调用其真实的方法, 返回值为null
+		println(mockLoginService.service())
+
+		val spyLoginService = spy(new LoginService)
+
+		// spy 产生的实例, 可以执行其真实的方法
+		// println(spyLoginService.service())
+
 		when(mockLoginService.login("m")).thenReturn(true)
 
-		println(mockLoginService.login("a"))
+//		when(spyLoginService.service()).thenReturn("spy login service ....")
+//
+//		println(spyLoginService.service())
 
-		val form = Form("a")
-		when(mockLoginService.login(meq(form))).thenReturn(true)
-		println(mockLoginService.login(form))
+		Mockito.doReturn("spy login service ....", Nil: _*).when(spyLoginService).service()
+
+		println(spyLoginService.service())
+
+//
+//		println(mockLoginService.login("a"))
+//
+//		val form = Form("a")
+//		when(mockLoginService.login(meq(form))).thenReturn(true)
+//		println(mockLoginService.login(form))
 
 	}
 }
