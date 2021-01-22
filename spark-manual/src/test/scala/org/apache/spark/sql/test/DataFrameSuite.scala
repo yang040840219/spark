@@ -1,16 +1,17 @@
 // scalastyle:off
 package org.apache.spark.sql.test
 
+import java.util.concurrent.TimeUnit
+
 import org.apache.spark.sql.types.{ArrayType, StructType}
 import org.apache.spark.sql.{DataFrame, Encoders, Log, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
-import org.apache.spark.sql.functions.{col, udf, countDistinct}
+import org.apache.spark.sql.functions.{col, countDistinct, udf}
 import org.apache.spark.sql.internal.SQLConf
 
 class DataFrameSuite extends AnyFunSuite with Log {
 
 	lazy val spark = SparkSession.builder()
-		.config("spark.sql.sources.useV1SourceList", "") // use datasource v2
 		.master("local[2]").appName("dataframe suite").getOrCreate()
 
 	val json =
@@ -94,6 +95,24 @@ class DataFrameSuite extends AnyFunSuite with Log {
 
 		val df = spark.sql("select array(1,2,4,3)")
 		df.printSchema()
+	}
+
+
+	test("distinct") {
+
+		val path = "file:///opt/data/delta/json/realtime"
+
+		val df = spark.read.json(path)
+
+		val cnt = df.groupBy("p_day").agg(countDistinct(col("outroomid")).as("cnt_key"),
+			countDistinct(col("localaccountid")).as("cnt_value")
+		)
+
+		cnt.show()
+
+		cnt.explain(true)
+
+		TimeUnit.DAYS.sleep(1)
 	}
 
 

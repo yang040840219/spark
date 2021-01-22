@@ -28,6 +28,18 @@ class RepartitionTableSuite extends  SparkFunSuite{
           .save("file:///opt/data/tmp/spark-sql/t_1")
     }
 
+    test("repartition with multi partition columns") {
+        val df = spark.range(0, 10000, 1, numPartitions = 20).selectExpr("id",
+            "id % 3 as p_day",
+            "if(id > 8000, id % 3, 0) as p_hour")
+        // val writeDF = df.repartition(15, Seq(col("p_day"), col("p_hour")):_*)
+        val writeDF = df.repartition(15)
+        writeDF.write.partitionBy("p_day", "p_hour")
+          .format("json")
+          .mode(SaveMode.Overwrite)
+          .save("file:///opt/data/tmp/spark-sql/t_3")
+    }
+
     test("simple repartition") {
         import spark.implicits._
         val df = spark.range(0, 10000, step = 1, numPartitions = 100).selectExpr("id % 3 as key", "id as value")

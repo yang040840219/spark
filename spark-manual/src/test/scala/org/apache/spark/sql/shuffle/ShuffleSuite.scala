@@ -1,8 +1,11 @@
 // scalastyle:off
 package org.apache.spark.sql.shuffle
 
+import java.io.File
 import java.util.concurrent.TimeUnit
 
+import org.apache.commons.io.FileUtils
+import org.apache.spark.HashPartitioner
 import org.apache.spark.sql.{Log, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
 
@@ -12,21 +15,29 @@ class ShuffleSuite extends AnyFunSuite with Log {
 
 	val warehouseLocation = "/opt/data/warehouse"
 
+	val shufflePath = "/opt/data/spark/shuffle"
+
 	lazy val spark = SparkSession.builder()
 		.master("local[1]")
 		.config("spark.sql.warehouse.dir", warehouseLocation)
-  	.config("spark.shuffle.compress", "false")
-  	.config("spark.local.dir", s"/opt/data/spark/shuffle/${Random.nextInt(1000)}")
-  	.config("spark.default.parallelism", "5")
-  	.config("spark.sql.parquet.enableVectorizedReader", "false")
+		.config("spark.shuffle.compress", "false")
+		.config("spark.local.dir", s"$shufflePath/${Random.nextInt(1000)}")
+		.config("spark.default.parallelism", "5")
+		.config("spark.sql.parquet.enableVectorizedReader", "false")
+		.config("spark.executor.heartbeatInterval", "100000000")
+		.config("spark.network.timeout", "100000001")
+		.config("spark.shuffle.compress", "false")
 		.appName("shuffle suite").getOrCreate()
 
+	FileUtils.deleteDirectory(new File(shufflePath))
+
+
 	test("simple shuffle") {
-		val rdd = spark.sparkContext.range(1, 1000000, numSlices = 3)
-		val reduceRDD = rdd.map(line => (line % 3, line)).reduceByKey((x1, x2) => x1 + x2)
+		val rdd = spark.sparkContext.range(1, 1000, numSlices = 3)
+		val reduceRDD = rdd.map(line => (Random.nextInt(line.toInt) % 10, line)).groupByKey(4).map(x => (x._1, x._2.size))
 		print(reduceRDD.toDebugString)
 		val result = reduceRDD.collect()
-		println(result.mkString(","))
+		result.foreach(println)
 		TimeUnit.DAYS.sleep(1)
 	}
 
@@ -44,5 +55,4 @@ class ShuffleSuite extends AnyFunSuite with Log {
 		val cnt = df.count()
 		print(s"cnt: $cnt")
 	}
-
 }

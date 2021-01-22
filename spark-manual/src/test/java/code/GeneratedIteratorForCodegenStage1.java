@@ -4,294 +4,216 @@ import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.expressions.UnsafeRow;
 import org.apache.spark.unsafe.types.UTF8String;
 
-/**
- * 2020/9/21
- */
-final class GeneratedIteratorForCodegenStage1 extends org.apache.spark.sql.execution.BufferedRowIterator {
-    private Object[] references;
-    private scala.collection.Iterator[] inputs;
-    private boolean sort_needToSort_0;
-    private org.apache.spark.sql.execution.UnsafeExternalRowSorter sort_sorter_0;
-    private org.apache.spark.executor.TaskMetrics sort_metrics_0;
-    private scala.collection.Iterator<InternalRow> sort_sortedIter_0;
-    private int columnartorow_batchIdx_0;
-    private boolean serializefromobject_resultIsNull_0;
-    private boolean serializefromobject_resultIsNull_1;
-    private java.lang.String[] serializefromobject_mutableStateArray_0 = new java.lang.String[2];
-    private org.apache.spark.sql.execution.vectorized.OnHeapColumnVector[] columnartorow_mutableStateArray_2 = new org.apache.spark.sql.execution.vectorized.OnHeapColumnVector[2];
-    private org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter[] columnartorow_mutableStateArray_3 = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter[10];
-    private org.apache.spark.sql.vectorized.ColumnarBatch[] columnartorow_mutableStateArray_1 = new org.apache.spark.sql.vectorized.ColumnarBatch[1];
-    private scala.collection.Iterator[] columnartorow_mutableStateArray_0 = new scala.collection.Iterator[1];
-    private org.apache.spark.sql.Row[] mapelements_mutableStateArray_0 = new org.apache.spark.sql.Row[1];
-
-    public GeneratedIteratorForCodegenStage1(Object[] references) {
-        this.references = references;
-    }
-
-    public void init(int index, scala.collection.Iterator[] inputs) {
-        partitionIndex = index;
-        this.inputs = inputs;
-        wholestagecodegen_init_0_0();
-        wholestagecodegen_init_0_1();
-
-    }
-
-    private void mapelements_doConsume_0(org.apache.spark.sql.Row mapelements_expr_0_0, boolean mapelements_exprIsNull_0_0) throws java.io.IOException {
-        boolean mapelements_isNull_1 = true;
-        scala.Tuple2 mapelements_value_1 = null;
-        if (!false) {
-            mapelements_mutableStateArray_0[0] = mapelements_expr_0_0;
-
-            mapelements_isNull_1 = false;
-            if (!mapelements_isNull_1) {
-                Object mapelements_funcResult_0 = null;
-                mapelements_funcResult_0 = ((scala.Function1) references[5] /* literal */).apply(mapelements_mutableStateArray_0[0]);
-
-                if (mapelements_funcResult_0 != null) {
-                    mapelements_value_1 = (scala.Tuple2) mapelements_funcResult_0;
-                } else {
-                    mapelements_isNull_1 = true;
-                }
-
-            }
-        }
-
-        serializefromobject_doConsume_0(mapelements_value_1, mapelements_isNull_1);
-
-    }
-
-    private void wholestagecodegen_init_0_1() {
-        columnartorow_mutableStateArray_3[7] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(1, 32);
-        columnartorow_mutableStateArray_3[8] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(2, 64);
-        columnartorow_mutableStateArray_3[9] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(2, 64);
-
-    }
-
-    private void sort_addToSorter_0() throws java.io.IOException {
-        if (columnartorow_mutableStateArray_1[0] == null) {
-            columnartorow_nextBatch_0();
-        }
-        while ( columnartorow_mutableStateArray_1[0] != null) {
-            int columnartorow_numRows_0 = columnartorow_mutableStateArray_1[0].numRows();
-            int columnartorow_localEnd_0 = columnartorow_numRows_0 - columnartorow_batchIdx_0;
-            for (int columnartorow_localIdx_0 = 0; columnartorow_localIdx_0 < columnartorow_localEnd_0; columnartorow_localIdx_0++) {
-                int columnartorow_rowIdx_0 = columnartorow_batchIdx_0 + columnartorow_localIdx_0;
-                do {
-                    boolean columnartorow_isNull_1 = columnartorow_mutableStateArray_2[1].isNullAt(columnartorow_rowIdx_0);
-                    UTF8String columnartorow_value_1 = columnartorow_isNull_1 ? null : (columnartorow_mutableStateArray_2[1].getUTF8String(columnartorow_rowIdx_0));
-
-                    boolean filter_value_2 = !columnartorow_isNull_1;
-                    if (!filter_value_2) continue;
-
-                    boolean filter_isNull_2 = true;
-                    boolean filter_value_3 = false;
-                    boolean filter_isNull_3 = columnartorow_isNull_1;
-                    int filter_value_4 = -1;
-                    if (!columnartorow_isNull_1) {
-                        UTF8String.IntWrapper filter_intWrapper_0 = new UTF8String.IntWrapper();
-                        if (columnartorow_value_1.toInt(filter_intWrapper_0)) {
-                            filter_value_4 = filter_intWrapper_0.value;
-                        } else {
-                            filter_isNull_3 = true;
-                        }
-                        filter_intWrapper_0 = null;
-                    }
-                    if (!filter_isNull_3) {
-                        filter_isNull_2 = false; // resultCode could change nullability.
-                        filter_value_3 = filter_value_4 > 2;
-
-                    }
-                    if (filter_isNull_2 || !filter_value_3) continue;
-
-                    ((org.apache.spark.sql.execution.metric.SQLMetric) references[3] /* numOutputRows */).add(1);
-
-                    boolean columnartorow_isNull_0 = columnartorow_mutableStateArray_2[0].isNullAt(columnartorow_rowIdx_0);
-                    UTF8String columnartorow_value_0 = columnartorow_isNull_0 ? null : (columnartorow_mutableStateArray_2[0].getUTF8String(columnartorow_rowIdx_0));
-
-                    deserializetoobject_doConsume_0(columnartorow_value_0, columnartorow_isNull_0, columnartorow_value_1, false);
-
-                } while(false);
-// shouldStop check is eliminated
-            }
-            columnartorow_batchIdx_0 = columnartorow_numRows_0;
-            columnartorow_mutableStateArray_1[0] = null;
-            columnartorow_nextBatch_0();
-        }
-
-    }
-
-    private void deserializetoobject_doConsume_0(UTF8String deserializetoobject_expr_0_0, boolean deserializetoobject_exprIsNull_0_0, UTF8String deserializetoobject_expr_1_0, boolean deserializetoobject_exprIsNull_1_0) throws java.io.IOException {
-        Object[] deserializetoobject_values_0 = new Object[2];
-
-        boolean deserializetoobject_isNull_3 = true;
-        java.lang.String deserializetoobject_value_3 = null;
-        if (!deserializetoobject_exprIsNull_0_0) {
-            deserializetoobject_isNull_3 = false;
-            if (!deserializetoobject_isNull_3) {
-                Object deserializetoobject_funcResult_0 = null;
-                deserializetoobject_funcResult_0 = deserializetoobject_expr_0_0.toString();
-                deserializetoobject_value_3 = (java.lang.String) deserializetoobject_funcResult_0;
-
-            }
-        }
-        if (deserializetoobject_isNull_3) {
-            deserializetoobject_values_0[0] = null;
-        } else {
-            deserializetoobject_values_0[0] = deserializetoobject_value_3;
-        }
-
-        boolean deserializetoobject_isNull_5 = true;
-        java.lang.String deserializetoobject_value_5 = null;
-        if (!deserializetoobject_exprIsNull_1_0) {
-            deserializetoobject_isNull_5 = false;
-            if (!deserializetoobject_isNull_5) {
-                Object deserializetoobject_funcResult_1 = null;
-                deserializetoobject_funcResult_1 = deserializetoobject_expr_1_0.toString();
-                deserializetoobject_value_5 = (java.lang.String) deserializetoobject_funcResult_1;
-
-            }
-        }
-        if (deserializetoobject_isNull_5) {
-            deserializetoobject_values_0[1] = null;
-        } else {
-            deserializetoobject_values_0[1] = deserializetoobject_value_5;
-        }
-
-        final org.apache.spark.sql.Row deserializetoobject_value_2 = new org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema(deserializetoobject_values_0, ((org.apache.spark.sql.types.StructType) references[4] /* schema */));
-
-        mapelements_doConsume_0(deserializetoobject_value_2, false);
-
-    }
-
-    private void columnartorow_nextBatch_0() throws java.io.IOException {
-        if (columnartorow_mutableStateArray_0[0].hasNext()) {
-            columnartorow_mutableStateArray_1[0] = (org.apache.spark.sql.vectorized.ColumnarBatch)columnartorow_mutableStateArray_0[0].next();
-            ((org.apache.spark.sql.execution.metric.SQLMetric) references[2] /* numInputBatches */).add(1);
-            ((org.apache.spark.sql.execution.metric.SQLMetric) references[1] /* numOutputRows */).add(columnartorow_mutableStateArray_1[0].numRows());
-            columnartorow_batchIdx_0 = 0;
-            columnartorow_mutableStateArray_2[0] = (org.apache.spark.sql.execution.vectorized.OnHeapColumnVector) columnartorow_mutableStateArray_1[0].column(0);
-            columnartorow_mutableStateArray_2[1] = (org.apache.spark.sql.execution.vectorized.OnHeapColumnVector) columnartorow_mutableStateArray_1[0].column(1);
-
-        }
-    }
-
-    private void serializefromobject_doConsume_0(scala.Tuple2 serializefromobject_expr_0_0, boolean serializefromobject_exprIsNull_0_0) throws java.io.IOException {
-        serializefromobject_resultIsNull_0 = false;
-
-        if (!serializefromobject_resultIsNull_0) {
-            if (serializefromobject_exprIsNull_0_0) {
-                throw new NullPointerException(((java.lang.String) references[6] /* errMsg */));
-            }
-            boolean serializefromobject_isNull_2 = true;
-            java.lang.String serializefromobject_value_2 = null;
-            if (!false) {
-                serializefromobject_isNull_2 = false;
-                if (!serializefromobject_isNull_2) {
-                    Object serializefromobject_funcResult_0 = null;
-                    serializefromobject_funcResult_0 = serializefromobject_expr_0_0._1();
-
-                    if (serializefromobject_funcResult_0 != null) {
-                        serializefromobject_value_2 = (java.lang.String) serializefromobject_funcResult_0;
-                    } else {
-                        serializefromobject_isNull_2 = true;
-                    }
-
-                }
-            }
-            serializefromobject_resultIsNull_0 = serializefromobject_isNull_2;
-            serializefromobject_mutableStateArray_0[0] = serializefromobject_value_2;
-        }
-
-        boolean serializefromobject_isNull_1 = serializefromobject_resultIsNull_0;
-        UTF8String serializefromobject_value_1 = null;
-        if (!serializefromobject_resultIsNull_0) {
-            serializefromobject_value_1 = org.apache.spark.unsafe.types.UTF8String.fromString(serializefromobject_mutableStateArray_0[0]);
-        }
-        serializefromobject_resultIsNull_1 = false;
-
-        if (!serializefromobject_resultIsNull_1) {
-            if (serializefromobject_exprIsNull_0_0) {
-                throw new NullPointerException(((java.lang.String) references[7] /* errMsg */));
-            }
-            boolean serializefromobject_isNull_7 = true;
-            java.lang.String serializefromobject_value_7 = null;
-            if (!false) {
-                serializefromobject_isNull_7 = false;
-                if (!serializefromobject_isNull_7) {
-                    Object serializefromobject_funcResult_1 = null;
-                    serializefromobject_funcResult_1 = serializefromobject_expr_0_0._2();
-
-                    if (serializefromobject_funcResult_1 != null) {
-                        serializefromobject_value_7 = (java.lang.String) serializefromobject_funcResult_1;
-                    } else {
-                        serializefromobject_isNull_7 = true;
-                    }
-
-                }
-            }
-            serializefromobject_resultIsNull_1 = serializefromobject_isNull_7;
-            serializefromobject_mutableStateArray_0[1] = serializefromobject_value_7;
-        }
-
-        boolean serializefromobject_isNull_6 = serializefromobject_resultIsNull_1;
-        UTF8String serializefromobject_value_6 = null;
-        if (!serializefromobject_resultIsNull_1) {
-            serializefromobject_value_6 = org.apache.spark.unsafe.types.UTF8String.fromString(serializefromobject_mutableStateArray_0[1]);
-        }
-        columnartorow_mutableStateArray_3[9].reset();
-
-        columnartorow_mutableStateArray_3[9].zeroOutNullBytes();
-
-        if (serializefromobject_isNull_1) {
-            columnartorow_mutableStateArray_3[9].setNullAt(0);
-        } else {
-            columnartorow_mutableStateArray_3[9].write(0, serializefromobject_value_1);
-        }
-
-        if (serializefromobject_isNull_6) {
-            columnartorow_mutableStateArray_3[9].setNullAt(1);
-        } else {
-            columnartorow_mutableStateArray_3[9].write(1, serializefromobject_value_6);
-        }
-        sort_sorter_0.insertRow((UnsafeRow)(columnartorow_mutableStateArray_3[9].getRow()));
-
-    }
-
-    protected void processNext() throws java.io.IOException {
-        if (sort_needToSort_0) {
-            long sort_spillSizeBefore_0 = sort_metrics_0.memoryBytesSpilled();
-            sort_addToSorter_0();
-            sort_sortedIter_0 = sort_sorter_0.sort();
-            ((org.apache.spark.sql.execution.metric.SQLMetric) references[10] /* sortTime */).add(sort_sorter_0.getSortTimeNanos() / 1000000);
-            ((org.apache.spark.sql.execution.metric.SQLMetric) references[8] /* peakMemory */).add(sort_sorter_0.getPeakMemoryUsage());
-            ((org.apache.spark.sql.execution.metric.SQLMetric) references[9] /* spillSize */).add(sort_metrics_0.memoryBytesSpilled() - sort_spillSizeBefore_0);
-            sort_metrics_0.incPeakExecutionMemory(sort_sorter_0.getPeakMemoryUsage());
-            sort_needToSort_0 = false;
-        }
-
-        while ( sort_sortedIter_0.hasNext()) {
-            UnsafeRow sort_outputRow_0 = (UnsafeRow)sort_sortedIter_0.next();
-
-            append(sort_outputRow_0);
-
-            if (shouldStop()) return;
-        }
-    }
-
-    private void wholestagecodegen_init_0_0() {
-        sort_needToSort_0 = true;
-        sort_sorter_0 = ((org.apache.spark.sql.execution.SortExec) references[0] /* plan */).createSorter();
-        sort_metrics_0 = org.apache.spark.TaskContext.get().taskMetrics();
-
-        columnartorow_mutableStateArray_0[0] = inputs[0];
-        columnartorow_mutableStateArray_3[0] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(2, 64);
-        columnartorow_mutableStateArray_3[1] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(2, 64);
-        columnartorow_mutableStateArray_3[2] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(2, 64);
-        columnartorow_mutableStateArray_3[3] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(2, 64);
-        columnartorow_mutableStateArray_3[4] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(1, 32);
-        columnartorow_mutableStateArray_3[5] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(1, 32);
-        columnartorow_mutableStateArray_3[6] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(1, 32);
-
-    }
-
-}
+/* 005 */ // codegenStageId=1
+/* 006 */ final class GeneratedIteratorForCodegenStage1 extends org.apache.spark.sql.execution.BufferedRowIterator {
+    /* 007 */   private Object[] references;
+    /* 008 */   private scala.collection.Iterator[] inputs;
+    /* 009 */   private boolean agg_initAgg_0;
+    /* 010 */   private org.apache.spark.unsafe.KVIterator agg_mapIter_0;
+    /* 011 */   private org.apache.spark.sql.execution.UnsafeFixedWidthAggregationMap agg_hashMap_0;
+    /* 012 */   private org.apache.spark.sql.execution.UnsafeKVExternalSorter agg_sorter_0;
+    /* 013 */   private scala.collection.Iterator inputadapter_input_0;
+    /* 014 */   private org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter[] expand_mutableStateArray_0 = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter[4];
+    /* 015 */
+    /* 016 */   public GeneratedIteratorForCodegenStage1(Object[] references) {
+        /* 017 */     this.references = references;
+        /* 018 */   }
+    /* 019 */
+    /* 020 */   public void init(int index, scala.collection.Iterator[] inputs) {
+        /* 021 */     partitionIndex = index;
+        /* 022 */     this.inputs = inputs;
+        /* 023 */
+        /* 024 */     inputadapter_input_0 = inputs[0];
+        /* 025 */     expand_mutableStateArray_0[0] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(4, 96);
+        /* 026 */     expand_mutableStateArray_0[1] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(4, 96);
+        /* 027 */     expand_mutableStateArray_0[2] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(4, 96);
+        /* 028 */     expand_mutableStateArray_0[3] = new org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter(4, 96);
+        /* 029 */
+        /* 030 */   }
+    /* 031 */
+    /* 032 */   private void expand_doConsume_0(InternalRow inputadapter_row_0, UTF8String expand_expr_0_0, boolean expand_exprIsNull_0_0, UTF8String expand_expr_1_0, boolean expand_exprIsNull_1_0, UTF8String expand_expr_2_0, boolean expand_exprIsNull_2_0) throws java.io.IOException {
+        /* 033 */     boolean expand_isNull_1 = true;
+        /* 034 */     UTF8String expand_value_1 =
+                /* 035 */     null;
+        /* 036 */     boolean expand_isNull_2 = true;
+        /* 037 */     UTF8String expand_value_2 =
+                /* 038 */     null;
+        /* 039 */     boolean expand_isNull_3 = true;
+        /* 040 */     int expand_value_3 =
+                /* 041 */     -1;
+        /* 042 */     for (int expand_i_0 = 0; expand_i_0 < 2; expand_i_0 ++) {
+            /* 043 */       switch (expand_i_0) {
+                /* 044 */       case 0:
+                    /* 045 */         expand_isNull_1 = expand_exprIsNull_1_0;
+                    /* 046 */         expand_value_1 = expand_expr_1_0;
+                    /* 047 */
+                    /* 048 */         expand_isNull_2 = true;
+                    /* 049 */         expand_value_2 = ((UTF8String)null);
+                    /* 050 */
+                    /* 051 */         expand_isNull_3 = false;
+                    /* 052 */         expand_value_3 = 1;
+                    /* 053 */         break;
+                /* 054 */
+                /* 055 */       case 1:
+                    /* 056 */         expand_isNull_1 = true;
+                    /* 057 */         expand_value_1 = ((UTF8String)null);
+                    /* 058 */
+                    /* 059 */         expand_isNull_2 = expand_exprIsNull_0_0;
+                    /* 060 */         expand_value_2 = expand_expr_0_0;
+                    /* 061 */
+                    /* 062 */         expand_isNull_3 = false;
+                    /* 063 */         expand_value_3 = 2;
+                    /* 064 */         break;
+                /* 065 */       }
+            /* 066 */       ((org.apache.spark.sql.execution.metric.SQLMetric) references[4] /* numOutputRows */).add(1);
+            /* 067 */
+            /* 068 */       agg_doConsume_0(expand_expr_2_0, expand_exprIsNull_2_0, expand_value_1, expand_isNull_1, expand_value_2, expand_isNull_2, expand_value_3);
+            /* 069 */
+            /* 070 */     }
+        /* 071 */
+        /* 072 */   }
+    /* 073 */
+    /* 074 */   private void agg_doAggregateWithKeysOutput_0(UnsafeRow agg_keyTerm_0, UnsafeRow agg_bufferTerm_0)
+    /* 075 */   throws java.io.IOException {
+        /* 076 */     ((org.apache.spark.sql.execution.metric.SQLMetric) references[5] /* numOutputRows */).add(1);
+        /* 077 */
+        /* 078 */     boolean agg_isNull_12 = agg_keyTerm_0.isNullAt(0);
+        /* 079 */     UTF8String agg_value_12 = agg_isNull_12 ?
+                /* 080 */     null : (agg_keyTerm_0.getUTF8String(0));
+        /* 081 */     boolean agg_isNull_13 = agg_keyTerm_0.isNullAt(1);
+        /* 082 */     UTF8String agg_value_13 = agg_isNull_13 ?
+                /* 083 */     null : (agg_keyTerm_0.getUTF8String(1));
+        /* 084 */     boolean agg_isNull_14 = agg_keyTerm_0.isNullAt(2);
+        /* 085 */     UTF8String agg_value_14 = agg_isNull_14 ?
+                /* 086 */     null : (agg_keyTerm_0.getUTF8String(2));
+        /* 087 */     int agg_value_15 = agg_keyTerm_0.getInt(3);
+        /* 088 */     expand_mutableStateArray_0[3].reset();
+        /* 089 */
+        /* 090 */     expand_mutableStateArray_0[3].zeroOutNullBytes();
+        /* 091 */
+        /* 092 */     if (agg_isNull_12) {
+            /* 093 */       expand_mutableStateArray_0[3].setNullAt(0);
+            /* 094 */     } else {
+            /* 095 */       expand_mutableStateArray_0[3].write(0, agg_value_12);
+            /* 096 */     }
+        /* 097 */
+        /* 098 */     if (agg_isNull_13) {
+            /* 099 */       expand_mutableStateArray_0[3].setNullAt(1);
+            /* 100 */     } else {
+            /* 101 */       expand_mutableStateArray_0[3].write(1, agg_value_13);
+            /* 102 */     }
+        /* 103 */
+        /* 104 */     if (agg_isNull_14) {
+            /* 105 */       expand_mutableStateArray_0[3].setNullAt(2);
+            /* 106 */     } else {
+            /* 107 */       expand_mutableStateArray_0[3].write(2, agg_value_14);
+            /* 108 */     }
+        /* 109 */
+        /* 110 */     expand_mutableStateArray_0[3].write(3, agg_value_15);
+        /* 111 */     append((expand_mutableStateArray_0[3].getRow()));
+        /* 112 */
+        /* 113 */   }
+    /* 114 */
+    /* 115 */   private void agg_doConsume_0(UTF8String agg_expr_0_0, boolean agg_exprIsNull_0_0, UTF8String agg_expr_1_0, boolean agg_exprIsNull_1_0, UTF8String agg_expr_2_0, boolean agg_exprIsNull_2_0, int agg_expr_3_0) throws java.io.IOException {
+        /* 116 */     UnsafeRow agg_unsafeRowAggBuffer_0 = null;
+        /* 117 */
+        /* 118 */     // generate grouping key
+        /* 119 */     expand_mutableStateArray_0[2].reset();
+        /* 120 */
+        /* 121 */     expand_mutableStateArray_0[2].zeroOutNullBytes();
+        /* 122 */
+        /* 123 */     if (agg_exprIsNull_0_0) {
+            /* 124 */       expand_mutableStateArray_0[2].setNullAt(0);
+            /* 125 */     } else {
+            /* 126 */       expand_mutableStateArray_0[2].write(0, agg_expr_0_0);
+            /* 127 */     }
+        /* 128 */
+        /* 129 */     if (agg_exprIsNull_1_0) {
+            /* 130 */       expand_mutableStateArray_0[2].setNullAt(1);
+            /* 131 */     } else {
+            /* 132 */       expand_mutableStateArray_0[2].write(1, agg_expr_1_0);
+            /* 133 */     }
+        /* 134 */
+        /* 135 */     if (agg_exprIsNull_2_0) {
+            /* 136 */       expand_mutableStateArray_0[2].setNullAt(2);
+            /* 137 */     } else {
+            /* 138 */       expand_mutableStateArray_0[2].write(2, agg_expr_2_0);
+            /* 139 */     }
+        /* 140 */
+        /* 141 */     expand_mutableStateArray_0[2].write(3, agg_expr_3_0);
+        /* 142 */     int agg_unsafeRowKeyHash_0 = (expand_mutableStateArray_0[2].getRow()).hashCode();
+        /* 143 */     if (true) {
+            /* 144 */       // try to get the buffer from hash map
+            /* 145 */       agg_unsafeRowAggBuffer_0 =
+                    /* 146 */       agg_hashMap_0.getAggregationBufferFromUnsafeRow((expand_mutableStateArray_0[2].getRow()), agg_unsafeRowKeyHash_0);
+            /* 147 */     }
+        /* 148 */     // Can't allocate buffer from the hash map. Spill the map and fallback to sort-based
+        /* 149 */     // aggregation after processing all input rows.
+        /* 150 */     if (agg_unsafeRowAggBuffer_0 == null) {
+            /* 151 */       if (agg_sorter_0 == null) {
+                /* 152 */         agg_sorter_0 = agg_hashMap_0.destructAndCreateExternalSorter();
+                /* 153 */       } else {
+                /* 154 */         agg_sorter_0.merge(agg_hashMap_0.destructAndCreateExternalSorter());
+                /* 155 */       }
+            /* 156 */
+            /* 157 */       // the hash map had be spilled, it should have enough memory now,
+            /* 158 */       // try to allocate buffer again.
+            /* 159 */       agg_unsafeRowAggBuffer_0 = agg_hashMap_0.getAggregationBufferFromUnsafeRow(
+                    /* 160 */         (expand_mutableStateArray_0[2].getRow()), agg_unsafeRowKeyHash_0);
+            /* 161 */       if (agg_unsafeRowAggBuffer_0 == null) {
+                /* 162 */         // failed to allocate the first page
+                /* 163 */         throw new org.apache.spark.memory.SparkOutOfMemoryError("No enough memory for aggregation");
+                /* 164 */       }
+            /* 165 */     }
+        /* 166 */
+        /* 167 */     // common sub-expressions
+        /* 168 */
+        /* 169 */     // evaluate aggregate functions and update aggregation buffers
+        /* 170 */
+        /* 171 */   }
+    /* 172 */
+    /* 173 */   private void agg_doAggregateWithKeys_0() throws java.io.IOException {
+        /* 174 */     while ( inputadapter_input_0.hasNext()) {
+            /* 175 */       InternalRow inputadapter_row_0 = (InternalRow) inputadapter_input_0.next();
+            /* 176 */
+            /* 177 */       boolean inputadapter_isNull_0 = inputadapter_row_0.isNullAt(0);
+            /* 178 */       UTF8String inputadapter_value_0 = inputadapter_isNull_0 ?
+                    /* 179 */       null : (inputadapter_row_0.getUTF8String(0));
+            /* 180 */       boolean inputadapter_isNull_1 = inputadapter_row_0.isNullAt(1);
+            /* 181 */       UTF8String inputadapter_value_1 = inputadapter_isNull_1 ?
+                    /* 182 */       null : (inputadapter_row_0.getUTF8String(1));
+            /* 183 */       boolean inputadapter_isNull_2 = inputadapter_row_0.isNullAt(2);
+            /* 184 */       UTF8String inputadapter_value_2 = inputadapter_isNull_2 ?
+                    /* 185 */       null : (inputadapter_row_0.getUTF8String(2));
+            /* 186 */
+            /* 187 */       expand_doConsume_0(inputadapter_row_0, inputadapter_value_0, inputadapter_isNull_0, inputadapter_value_1, inputadapter_isNull_1, inputadapter_value_2, inputadapter_isNull_2);
+            /* 188 */       // shouldStop check is eliminated
+            /* 189 */     }
+        /* 190 */
+        /* 191 */     agg_mapIter_0 = ((org.apache.spark.sql.execution.aggregate.HashAggregateExec) references[0] /* plan */).finishAggregate(agg_hashMap_0, agg_sorter_0, ((org.apache.spark.sql.execution.metric.SQLMetric) references[1] /* peakMemory */), ((org.apache.spark.sql.execution.metric.SQLMetric) references[2] /* spillSize */), ((org.apache.spark.sql.execution.metric.SQLMetric) references[3] /* avgHashProbe */));
+        /* 192 */   }
+    /* 193 */
+    /* 194 */   protected void processNext() throws java.io.IOException {
+        /* 195 */     if (!agg_initAgg_0) {
+            /* 196 */       agg_initAgg_0 = true;
+            /* 197 */
+            /* 198 */       agg_hashMap_0 = ((org.apache.spark.sql.execution.aggregate.HashAggregateExec) references[0] /* plan */).createHashMap();
+            /* 199 */       long wholestagecodegen_beforeAgg_0 = System.nanoTime();
+            /* 200 */       agg_doAggregateWithKeys_0();
+            /* 201 */       ((org.apache.spark.sql.execution.metric.SQLMetric) references[6] /* aggTime */).add((System.nanoTime() - wholestagecodegen_beforeAgg_0) / 1000000);
+            /* 202 */     }
+        /* 203 */     // output the result
+        /* 204 */
+        /* 205 */     while ( agg_mapIter_0.next()) {
+            /* 206 */       UnsafeRow agg_aggKey_0 = (UnsafeRow) agg_mapIter_0.getKey();
+            /* 207 */       UnsafeRow agg_aggBuffer_0 = (UnsafeRow) agg_mapIter_0.getValue();
+            /* 208 */       agg_doAggregateWithKeysOutput_0(agg_aggKey_0, agg_aggBuffer_0);
+            /* 209 */       if (shouldStop()) return;
+            /* 210 */     }
+        /* 211 */     agg_mapIter_0.close();
+        /* 212 */     if (agg_sorter_0 == null) {
+            /* 213 */       agg_hashMap_0.free();
+            /* 214 */     }
+        /* 215 */   }
+    /* 216 */
+    /* 217 */ }
