@@ -19,7 +19,7 @@ package org.apache.spark.sql.catalyst.expressions
 
 import java.sql.{Date, Timestamp}
 import java.text.{ParseException, SimpleDateFormat}
-import java.time.{DateTimeException, Instant, LocalDate, ZoneId}
+import java.time.{DateTimeException, Instant, LocalDate, Period, ZoneId}
 import java.time.format.DateTimeParseException
 import java.util.{Calendar, Locale, TimeZone}
 import java.util.concurrent.TimeUnit._
@@ -521,30 +521,51 @@ class DateExpressionsSuite extends SparkFunSuite with ExpressionEvalHelper {
     }
   }
 
-  test("add_months") {
-    checkEvaluation(AddMonths(Literal(Date.valueOf("2015-01-30")), Literal(1)),
+  private def testAddMonths(dataType: DataType): Unit = {
+    def addMonths(date: Literal, months: Any): AddMonthsBase = dataType match {
+      case IntegerType => AddMonths(date, Literal.create(months, dataType))
+      case YearMonthIntervalType =>
+        val period = if (months == null) null else Period.ofMonths(months.asInstanceOf[Int])
+        DateAddYMInterval(date, Literal.create(period, dataType))
+    }
+    checkEvaluation(addMonths(Literal(Date.valueOf("2015-01-30")), 1),
       DateTimeUtils.fromJavaDate(Date.valueOf("2015-02-28")))
-    checkEvaluation(AddMonths(Literal(Date.valueOf("2016-03-30")), Literal(-1)),
+    checkEvaluation(addMonths(Literal(Date.valueOf("2016-03-30")), -1),
       DateTimeUtils.fromJavaDate(Date.valueOf("2016-02-29")))
     checkEvaluation(
-      AddMonths(Literal(Date.valueOf("2015-01-30")), Literal.create(null, IntegerType)),
+      addMonths(Literal(Date.valueOf("2015-01-30")), null),
       null)
-    checkEvaluation(AddMonths(Literal.create(null, DateType), Literal(1)), null)
-    checkEvaluation(AddMonths(Literal.create(null, DateType), Literal.create(null, IntegerType)),
+    checkEvaluation(addMonths(Literal.create(null, DateType), 1), null)
+    checkEvaluation(addMonths(Literal.create(null, DateType), null),
       null)
     // Valid range of DateType is [0001-01-01, 9999-12-31]
     val maxMonthInterval = 10000 * 12
     checkEvaluation(
-      AddMonths(Literal(LocalDate.parse("0001-01-01")), Literal(maxMonthInterval)),
+      addMonths(Literal(LocalDate.parse("0001-01-01")), maxMonthInterval),
       LocalDate.of(10001, 1, 1).toEpochDay.toInt)
     checkEvaluation(
-      AddMonths(Literal(Date.valueOf("9999-12-31")), Literal(-1 * maxMonthInterval)), -719529)
+      addMonths(Literal(Date.valueOf("9999-12-31")), -1 * maxMonthInterval), -719529)
+  }
+
+  test("add_months") {
+    testAddMonths(IntegerType)
     // Test evaluation results between Interpreted mode and Codegen mode
     forAll (
       LiteralGenerator.randomGen(DateType),
       LiteralGenerator.monthIntervalLiterGen
     ) { (l1: Literal, l2: Literal) =>
       cmpInterpretWithCodegen(EmptyRow, AddMonths(l1, l2))
+    }
+  }
+
+  test("SPARK-34721: add a year-month interval to a date") {
+    testAddMonths(YearMonthIntervalType)
+    // Test evaluation results between Interpreted mode and Codegen mode
+    forAll (
+      LiteralGenerator.randomGen(DateType),
+      LiteralGenerator.yearMonthIntervalLiteralGen
+    ) { (l1: Literal, l2: Literal) =>
+      cmpInterpretWithCodegen(EmptyRow, DateAddYMInterval(l1, l2))
     }
   }
 
@@ -640,13 +661,33 @@ class DateExpressionsSuite extends SparkFunSuite with ExpressionEvalHelper {
     testNextDay("2015-07-23", "Fri", "2015-07-24")
     testNextDay("2015-07-23", "fr", "2015-07-24")
 
-    checkEvaluation(NextDay(Literal(Date.valueOf("2015-07-23")), Literal("xx")), null)
-    checkEvaluation(NextDay(Literal.create(null, DateType), Literal("xx")), null)
-    checkEvaluation(
-      NextDay(Literal(Date.valueOf("2015-07-23")), Literal.create(null, StringType)), null)
-    // Test escaping of dayOfWeek
-    GenerateUnsafeProjection.generate(
-      NextDay(Literal(Date.valueOf("2015-07-23")), Literal("\"quote")) :: Nil)
+    Seq(true, false).foreach { ansiEnabled =>
+      withSQLConf(SQLConf.ANSI_ENABLED.key -> ansiEnabled.toString) {
+        var expr: Expression = NextDay(Literal(Date.valueOf("2015-07-23")), Literal("xx"))
+        if (ansiEnabled) {
+          val errMsg = "Illegal input for day of week: xx"
+          checkExceptionInExpression[Exception](expr, errMsg)
+        } else {
+          checkEvaluation(expr, null)
+        }
+
+        expr = NextDay(Literal.create(null, DateType), Literal("xx"))
+        checkEvaluation(expr, null)
+
+        expr = NextDay(Literal(Date.valueOf("2015-07-23")), Literal.create(null, StringType))
+        checkEvaluation(expr, null)
+
+        // Test escaping of dayOfWeek
+        expr = NextDay(Literal(Date.valueOf("2015-07-23")), Literal("\"quote"))
+        GenerateUnsafeProjection.generate(expr :: Nil)
+        if (ansiEnabled) {
+          val errMsg = """Illegal input for day of week: "quote"""
+          checkExceptionInExpression[Exception](expr, errMsg)
+        } else {
+          checkEvaluation(expr, null)
+        }
+      }
+    }
   }
 
   private def testTruncDate(input: Date, fmt: String, expected: Date): Unit = {
@@ -1365,6 +1406,7 @@ class DateExpressionsSuite extends SparkFunSuite with ExpressionEvalHelper {
     checkEvaluation(
       SecondsToTimestamp(Literal(123.456789123)),
       Instant.ofEpochSecond(123, 456789000))
+    checkEvaluation(SecondsToTimestamp(Literal(16777215.0f)), Instant.ofEpochSecond(16777215))
   }
 
   test("TIMESTAMP_MILLIS") {

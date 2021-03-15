@@ -18,6 +18,8 @@
 package org.apache.spark.sql.execution
 
 import org.apache.spark.sql.{AnalysisException, QueryTest, Row}
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.plans.logical.Repartition
 import org.apache.spark.sql.internal.SQLConf._
 import org.apache.spark.sql.test.{SharedSparkSession, SQLTestUtils}
 
@@ -31,6 +33,7 @@ abstract class SQLViewTestSuite extends QueryTest with SQLTestUtils {
 
   protected def viewTypeString: String
   protected def formattedViewName(viewName: String): String
+  protected def tableIdentifier(viewName: String): TableIdentifier
 
   def createView(
       viewName: String,
@@ -200,6 +203,29 @@ abstract class SQLViewTestSuite extends QueryTest with SQLTestUtils {
     }
   }
 
+  test("view should use captured catalog and namespace to resolve relation") {
+    withTempDatabase { dbName =>
+      withTable("default.t", s"$dbName.t") {
+        withTempView("t") {
+          // create a table in default database
+          sql("USE DEFAULT")
+          Seq(2, 3, 1).toDF("c1").write.format("parquet").saveAsTable("t")
+          // create a view refer the created table in default database
+          val viewName = createView("v1", "SELECT * FROM t")
+          // using another database to create a table with same name
+          sql(s"USE $dbName")
+          Seq(4, 5, 6).toDF("c1").write.format("parquet").saveAsTable("t")
+          // create a temporary view with the same name
+          sql("CREATE TEMPORARY VIEW t AS SELECT 1")
+          withView(viewName) {
+            // view v1 should still refer the table defined in `default` database
+            checkViewOutput(viewName, Seq(Row(2), Row(3), Row(1)))
+          }
+        }
+      }
+    }
+  }
+
   test("SPARK-33692: view should use captured catalog and namespace to lookup function") {
     val avgFuncClass = "test.org.apache.spark.sql.MyDoubleAvg"
     val sumFuncClass = "test.org.apache.spark.sql.MyDoubleSum"
@@ -226,23 +252,88 @@ abstract class SQLViewTestSuite extends QueryTest with SQLTestUtils {
       }
     }
   }
+
+  test("SPARK-34260: replace existing view using CREATE OR REPLACE") {
+    val viewName = createView("testView", "SELECT * FROM (SELECT 1)")
+    withView(viewName) {
+      checkViewOutput(viewName, Seq(Row(1)))
+      createView("testView", "SELECT * FROM (SELECT 2)", replace = true)
+      checkViewOutput(viewName, Seq(Row(2)))
+    }
+  }
+
+  test("SPARK-34490 - query should fail if the view refers a dropped table") {
+    withTable("t") {
+      Seq(2, 3, 1).toDF("c1").write.format("parquet").saveAsTable("t")
+      val viewName = createView("testView", "SELECT * FROM t")
+      withView(viewName) {
+        // Always create a temp view in this case, not use `createView` on purpose
+        sql("CREATE TEMP VIEW t AS SELECT 1 AS c1")
+        withTempView("t") {
+          checkViewOutput(viewName, Seq(Row(2), Row(3), Row(1)))
+          // Manually drop table `t` to see if the query will fail
+          sql("DROP TABLE IF EXISTS default.t")
+          val e = intercept[AnalysisException] {
+            sql(s"SELECT * FROM $viewName").collect()
+          }.getMessage
+          assert(e.contains("Table or view not found: t"))
+        }
+      }
+    }
+  }
+
+  test("SPARK-34613: Fix view does not capture disable hint config") {
+    withSQLConf(DISABLE_HINTS.key -> "true") {
+      val viewName = createView("v1", "SELECT /*+ repartition(1) */ 1")
+      withView(viewName) {
+        assert(
+          sql(s"SELECT * FROM $viewName").queryExecution.analyzed.collect {
+            case e: Repartition => e
+          }.isEmpty
+        )
+        checkViewOutput(viewName, Seq(Row(1)))
+      }
+    }
+  }
+
+  test("SPARK-34152: view's identifier should be correctly stored") {
+    Seq(true, false).foreach { storeAnalyzed =>
+      withSQLConf(STORE_ANALYZED_PLAN_FOR_VIEW.key -> storeAnalyzed.toString) {
+        val viewName = createView("v", "SELECT 1")
+        withView(viewName) {
+          val tblIdent = tableIdentifier("v")
+          val metadata = spark.sessionState.catalog.getTempViewOrPermanentTableMetadata(tblIdent)
+          assert(metadata.identifier == tblIdent)
+        }
+      }
+    }
+  }
 }
 
 class LocalTempViewTestSuite extends SQLViewTestSuite with SharedSparkSession {
   override protected def viewTypeString: String = "TEMPORARY VIEW"
   override protected def formattedViewName(viewName: String): String = viewName
-
+  override protected def tableIdentifier(viewName: String): TableIdentifier = {
+    TableIdentifier(viewName)
+  }
 }
 
 class GlobalTempViewTestSuite extends SQLViewTestSuite with SharedSparkSession {
+  private def db: String = spark.sharedState.globalTempViewManager.database
   override protected def viewTypeString: String = "GLOBAL TEMPORARY VIEW"
   override protected def formattedViewName(viewName: String): String = {
-    val globalTempDB = spark.sharedState.globalTempViewManager.database
-    s"$globalTempDB.$viewName"
+    s"$db.$viewName"
+  }
+  override protected def tableIdentifier(viewName: String): TableIdentifier = {
+    TableIdentifier(viewName, Some(db))
   }
 }
 
 class PersistedViewTestSuite extends SQLViewTestSuite with SharedSparkSession {
+  private def db: String = "default"
   override protected def viewTypeString: String = "VIEW"
-  override protected def formattedViewName(viewName: String): String = s"default.$viewName"
+  override protected def formattedViewName(viewName: String): String = s"$db.$viewName"
+  override protected def tableIdentifier(viewName: String): TableIdentifier = {
+    TableIdentifier(viewName, Some(db))
+  }
 }

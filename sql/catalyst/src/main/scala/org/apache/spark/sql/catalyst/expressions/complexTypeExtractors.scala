@@ -22,6 +22,7 @@ import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.analysis._
 import org.apache.spark.sql.catalyst.expressions.codegen.{CodegenContext, CodeGenerator, ExprCode}
 import org.apache.spark.sql.catalyst.util.{quoteIdentifier, ArrayData, GenericArrayData, MapData, TypeUtils}
+import org.apache.spark.sql.errors.{QueryCompilationErrors, QueryExecutionErrors}
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
 
@@ -65,13 +66,8 @@ object ExtractValue {
       case (MapType(kt, _, _), _) => GetMapValue(child, extraction)
 
       case (otherType, _) =>
-        val errorMsg = otherType match {
-          case StructType(_) =>
-            s"Field name should be String Literal, but it's $extraction"
-          case other =>
-            s"Can't extract value from $child: need struct type but got ${other.catalogString}"
-        }
-        throw new AnalysisException(errorMsg)
+        throw QueryCompilationErrors.dataTypeUnsupportedByExtractValueError(
+          otherType, extraction, child)
     }
   }
 
@@ -94,7 +90,10 @@ object ExtractValue {
   }
 }
 
-trait ExtractValue extends Expression
+trait ExtractValue extends Expression {
+  // The name that is used to extract the value.
+  def name: Option[String]
+}
 
 /**
  * Returns the value of fields in the Struct `child`.
@@ -160,6 +159,7 @@ case class GetArrayStructFields(
   override def dataType: DataType = ArrayType(field.dataType, containsNull)
   override def toString: String = s"$child.${field.name}"
   override def sql: String = s"${child.sql}.${quoteIdentifier(field.name)}"
+  override def name: Option[String] = Some(field.name)
 
   protected override def nullSafeEval(input: Any): Any = {
     val array = input.asInstanceOf[ArrayData]
@@ -237,6 +237,7 @@ case class GetArrayItem(
 
   override def toString: String = s"$child[$ordinal]"
   override def sql: String = s"${child.sql}[${ordinal.sql}]"
+  override def name: Option[String] = None
 
   override def left: Expression = child
   override def right: Expression = ordinal
@@ -257,8 +258,7 @@ case class GetArrayItem(
     val index = ordinal.asInstanceOf[Number].intValue()
     if (index >= baseValue.numElements() || index < 0) {
       if (failOnError) {
-        throw new ArrayIndexOutOfBoundsException(
-          s"Invalid index: $index, numElements: ${baseValue.numElements()}")
+        throw QueryExecutionErrors.invalidArrayIndexError(index, baseValue.numElements)
       } else {
         null
       }
@@ -282,10 +282,7 @@ case class GetArrayItem(
       }
 
       val indexOutOfBoundBranch = if (failOnError) {
-        s"""throw new ArrayIndexOutOfBoundsException(
-           |  "Invalid index: " + $index + ", numElements: " + $eval1.numElements()
-           |);
-         """.stripMargin
+        s"throw QueryExecutionErrors.invalidArrayIndexError($index, $eval1.numElements());"
       } else {
         s"${ev.isNull} = true;"
       }
@@ -359,7 +356,7 @@ trait GetMapValueUtil extends BinaryExpression with ImplicitCastInputTypes {
 
     if (!found) {
       if (failOnError) {
-        throw new NoSuchElementException(s"Key $ordinal does not exist.")
+        throw QueryExecutionErrors.mapKeyNotExistError(ordinal)
       } else {
         null
       }
@@ -394,7 +391,7 @@ trait GetMapValueUtil extends BinaryExpression with ImplicitCastInputTypes {
     val keyJavaType = CodeGenerator.javaType(keyType)
     nullSafeCodeGen(ctx, ev, (eval1, eval2) => {
       val keyNotFoundBranch = if (failOnError) {
-        s"""throw new java.util.NoSuchElementException("Key " + $eval2 + " does not exist.");"""
+        s"throw QueryExecutionErrors.mapKeyNotExistError($eval2);"
       } else {
         s"${ev.isNull} = true;"
       }
@@ -456,6 +453,13 @@ case class GetMapValue(
 
   override def toString: String = s"$child[$key]"
   override def sql: String = s"${child.sql}[${key.sql}]"
+  override def name: Option[String] = key match {
+    case NonNullLiteral(s, StringType) => Some(s.toString)
+    // For GetMapValue(Attr("a"), "b") that is resolved from `a.b`, the string "b" may be casted to
+    // the map key type by type coercion rules. We can still get the name "b".
+    case Cast(NonNullLiteral(s, StringType), _, _) => Some(s.toString)
+    case _ => None
+  }
 
   override def left: Expression = child
   override def right: Expression = key
