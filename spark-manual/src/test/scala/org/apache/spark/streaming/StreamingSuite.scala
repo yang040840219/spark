@@ -1,6 +1,6 @@
 // scalastyle:off
 
-package org.apache.spark.sql.test
+package streaming
 
 import java.util.concurrent.TimeUnit
 import java.util.{Locale, Properties, TimeZone}
@@ -8,14 +8,13 @@ import java.util.{Locale, Properties, TimeZone}
 import org.apache.commons.lang3.StringUtils
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.spark.SparkFunSuite
+import org.apache.spark.sql.functions.{col, from_json}
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.streaming.StreamingQueryListener.{QueryProgressEvent, QueryStartedEvent, QueryTerminatedEvent}
 import org.apache.spark.sql.streaming.{OutputMode, StreamingQueryListener, Trigger}
-import org.apache.spark.sql.{DataFrame, ForeachWriter, Row, SparkSession}
-import org.joda.time.format.DateTimeFormat
-import streaming.KafkaLagWriter
-import org.apache.spark.sql.functions.{col, from_json, window, udf}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.joda.time.format.DateTimeFormat
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
