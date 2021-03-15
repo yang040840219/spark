@@ -1,5 +1,5 @@
 // scalastyle:off
-package streaming.org.apache.spark.state
+package org.apache.spark.streaming.state
 
 import java.util.UUID
 
@@ -8,7 +8,7 @@ import org.apache.spark.sql.execution.streaming.state.{StateStore, StateStoreCon
 import org.apache.spark.sql.types.{LongType, StringType, StructField, StructType}
 import org.scalatest.funsuite.AnyFunSuite
 
-class StateSuite extends AnyFunSuite{
+class StateSuite extends AnyFunSuite {
   
   private val spark = SparkSession.builder().master("local[2]").getOrCreate()
   private val sessionState = spark.sessionState
@@ -19,8 +19,12 @@ class StateSuite extends AnyFunSuite{
   val partition = 2
   val queryRunId = UUID.randomUUID()
   
+  test("") {
+	
+  }
+  
   test("simple state store") {
-	val coordRef2 = StateStoreCoordinatorRef.forDriver(spark.sparkContext.env)
+	val coordRef = StateStoreCoordinatorRef.forDriver(spark.sparkContext.env)
 	val storeProviderId = StateStoreProviderId(StateStoreId(checkpointLocation, operatorId, partition), queryRunId)
 	val keySchema = StructType(Seq(StructField("value", StringType)))
 	val valueSchema = StructType(Seq(
@@ -32,8 +36,8 @@ class StateSuite extends AnyFunSuite{
 	))
 	val indexOrdinal = None
 	val storeVersion = 0
-	val storeConf =  new StateStoreConf(sessionState.conf)
- 
+	val storeConf = new StateStoreConf(sessionState.conf)
+	
 	val store = StateStore.get(
 	  storeProviderId, keySchema, valueSchema, indexOrdinal, storeVersion,
 	  storeConf, hadoopConfiguration)

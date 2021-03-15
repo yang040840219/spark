@@ -2,11 +2,11 @@
 package org.apache.spark.sql.test
 
 import org.apache.spark.SparkFunSuite
-import org.apache.spark.sql.catalyst.encoders.{ExpressionEncoder, RowEncoder}
+import org.apache.spark.sql.catalyst.encoders.{ExpressionEncoder, RowEncoder, encoderFor}
 import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter
 import org.apache.spark.sql.catalyst.expressions.{GenericInternalRow, GenericRowWithSchema, UnsafeRow}
 import org.apache.spark.sql.catalyst.{CatalystTypeConverters, ScalaReflection}
-import org.apache.spark.sql.types.{IntegerType, LongType, StructField, StructType}
+import org.apache.spark.sql.types.{IntegerType, LongType, StringType, StructField, StructType}
 import org.apache.spark.sql.{Encoder, Encoders, Row, SparkSession}
 import org.apache.spark.unsafe.types.UTF8String
 
@@ -204,6 +204,27 @@ class InternalRowSuite extends SparkFunSuite {
         internalRow.update(0, 20)
         val row = encoder.createDeserializer().apply(internalRow)
         println(row.getClass)
+        println(row.getAs[Int](0))
+        
+        val internalRow1 = encoder.createSerializer().apply(row)
+        println(internalRow1.getClass)
+        println(internalRow1.getInt(0))
+    }
+    
+    
+    test("row get value") {
+        val schema = new StructType(Array(StructField("id", IntegerType), StructField("name", StringType)))
+        val row = new GenericRowWithSchema(Array(null, null), schema)
+        println(row.getAs[Long]("id")) // return null
+        println(row.getAs[Long](0)) // return null
+        println(row.getLong(0)) // throw exception
+    }
+    
+    case class User(id:Int, name:String)
+    
+    test("encoder") {
+        val encoder = ExpressionEncoder[User]()
+        println(encoder.schema)
     }
 
 }

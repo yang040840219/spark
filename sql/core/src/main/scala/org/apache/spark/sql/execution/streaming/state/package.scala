@@ -67,7 +67,9 @@ package object state {
         })
         cleanedF(store, iter)
       }
-
+      // scalastyle:off
+      println(s"stateInfo:${stateInfo}")
+      // scalastyle:on
       new StateStoreRDD(
         dataRDD,
         wrappedF,

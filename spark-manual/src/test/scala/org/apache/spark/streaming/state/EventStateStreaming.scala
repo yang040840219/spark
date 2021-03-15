@@ -1,5 +1,5 @@
 // scalastyle:off
-package streaming.org.apache.spark.state
+package org.apache.spark.streaming.state
 
 import java.sql.Timestamp
 import java.util.Calendar
@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.streaming.{GroupState, GroupStateTimeout, OutputMode, StreamingQuery, Trigger}
+import org.apache.spark.sql.streaming.{GroupState, GroupStateTimeout, OutputMode, Trigger}
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}

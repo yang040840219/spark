@@ -1,5 +1,5 @@
 // scalastyle:off
-package streaming.org.apache.spark.state
+package org.apache.spark.streaming.state
 
 import org.apache.spark.sql.SparkSession
 
@@ -19,8 +19,6 @@ object SocketStreaming {
 	  .option("port", "12345")
 	  .option("includeTimestamp", "true")
 	  .load()
-  
-	import spark.implicits._
 	
   }
   

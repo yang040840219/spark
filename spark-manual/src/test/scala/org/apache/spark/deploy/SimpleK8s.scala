@@ -1,22 +1,25 @@
 // scalastyle:off
-package org.apache.spark.k8s
+package org.apache.spark.deploy
 
-import java.util.concurrent.TimeUnit
 
 import org.apache.spark.SparkFunSuite
-import org.apache.spark.deploy.SparkSubmit
 
 class SimpleK8s extends SparkFunSuite {
   
   
   test("spark submit") {
-	val args =
-	  s"""
-		 |--deploy-mode client --properties-file /opt/data/spark/minikube/spark.properties --class k8s.WordCount spark-internal
-	   """.stripMargin
-	val method = classOf[SparkSubmit].getMethod("main", classOf[Array[String]])
-	method.invoke(null, args)
-	TimeUnit.DAYS.sleep(1)
+	val args = Seq("--deploy-mode", "client",
+	  "--properties-file", "/opt/data/spark/minikube/spark.properties",
+	  "--class", "k8s.WordCount",
+	  "--verbose",
+	  "spark-internal")
+	val appArgs = new SparkSubmitArguments(args)
+	val submit = new SparkSubmit()
+	val(childArgs, classpath, conf, mainClass) = submit.prepareSubmitEnvironment(appArgs)
+	
+	println(mainClass)
+	println(childArgs)
+	println(conf.get("spark.master"))
   }
   
 }

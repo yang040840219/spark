@@ -61,6 +61,7 @@ trait StatefulOperator extends SparkPlan {
 
   protected def getStateInfo: StatefulOperatorStateInfo = attachTree(this) {
     stateInfo.getOrElse {
+      logError("getStateInfo  stateInfo .......")
       throw new IllegalStateException("State location not present for execution")
     }
   }
