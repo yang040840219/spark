@@ -20,6 +20,7 @@ class SimpleK8s extends SparkFunSuite {
 	println(mainClass)
 	println(childArgs)
 	println(conf.get("spark.master"))
+	
   }
   
 }
