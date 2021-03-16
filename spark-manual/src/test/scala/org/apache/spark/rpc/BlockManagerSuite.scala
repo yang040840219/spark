@@ -2,16 +2,16 @@
 package org.apache.spark.rpc
 
 import org.apache.spark.broadcast.BroadcastManager
-import org.apache.spark.{MapOutputTrackerMaster, SecurityManager, SparkConf, SparkContext}
-import org.apache.spark.serializer.{KryoSerializer, SerializerManager}
-import org.scalatest.funsuite.AnyFunSuite
+import org.apache.spark.internal.config
 import org.apache.spark.memory.UnifiedMemoryManager
 import org.apache.spark.network.netty.NettyBlockTransferService
-import org.apache.spark.shuffle.sort.SortShuffleManager
-import org.apache.spark.storage.{BlockManager, BlockManagerId, BlockManagerInfo, BlockManagerMaster, BlockManagerMasterEndpoint, BlockManagerMasterHeartbeatEndpoint, StorageLevel, TestBlockId}
-import org.apache.spark.internal.config
 import org.apache.spark.scheduler.LiveListenerBus
-import org.mockito.Mockito.{mock, spy, when}
+import org.apache.spark.serializer.{KryoSerializer, SerializerManager}
+import org.apache.spark.shuffle.sort.SortShuffleManager
+import org.apache.spark.storage._
+import org.apache.spark.{MapOutputTrackerMaster, SecurityManager, SparkConf, SparkContext}
+import org.mockito.Mockito.spy
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.mutable
 
@@ -40,7 +40,7 @@ class BlockManagerSuite extends AnyFunSuite {
 
 		val liveListenerBus = spy(new LiveListenerBus(sparkConf))
 
-		val broadcastManager = new BroadcastManager(true, sparkConf, securityManager)
+		val broadcastManager = new BroadcastManager(true, sparkConf)
 		val mapOutputTracker = new MapOutputTrackerMaster(sparkConf, broadcastManager, true)
 
 		val master: BlockManagerMaster = spy(new BlockManagerMaster(

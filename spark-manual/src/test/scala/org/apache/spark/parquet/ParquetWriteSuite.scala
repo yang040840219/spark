@@ -5,6 +5,7 @@ import java.sql.Timestamp
 import java.util.Calendar
 
 import com.JsonUtil
+import com.github.mjakubowski84.parquet4s
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
@@ -12,8 +13,8 @@ import org.apache.parquet.hadoop.util.HadoopInputFile
 import org.apache.parquet.hadoop.{ParquetFileReader, ParquetInputFormat, ParquetReader}
 import org.apache.parquet.schema.MessageTypeParser
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.encoders.{ExpressionEncoder, RowEncoder}
-import org.apache.spark.sql.execution.datasources.parquet.{ParquetReadSupport, ParquetWriteSupport}
+import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.execution.datasources.parquet.{ParquetOptions, ParquetReadSupport, ParquetWriteSupport}
 import org.apache.spark.sql.execution.datasources.v2.parquet.ParquetPartitionReaderFactory
 import org.apache.spark.sql.execution.datasources.{FilePartition, PartitionedFile}
 import org.apache.spark.sql.internal.SQLConf
@@ -22,7 +23,6 @@ import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructT
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.util.SerializableConfiguration
 import org.scalatest.funsuite.AnyFunSuite
-import com.github.mjakubowski84.parquet4s
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -157,10 +157,12 @@ class ParquetWriteSuite extends AnyFunSuite {
 	
 	val sqlConf = spark.sessionState.conf
 	
+	val parquetOptions = new ParquetOptions(Map.empty[String,String], sqlConf)
 	val factory = ParquetPartitionReaderFactory(sqlConf, broadcastedConf, dataSchema,
 	  dataSchema,
 	  StructType(Seq.empty[StructField]),
-	  Array.empty)
+	  Array.empty,
+	  parquetOptions)
 	
 	val fs = FileSystem.get(new Path(path).toUri, configuration)
 	val fileStatus = fs.getFileStatus(new Path(path))

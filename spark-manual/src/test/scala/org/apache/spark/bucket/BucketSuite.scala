@@ -1,7 +1,6 @@
 // scalastyle:off
 package org.apache.spark.bucket
 
-import java.io.File
 import java.util.concurrent.TimeUnit
 
 import org.apache.hadoop.fs.{FileSystem, Path}

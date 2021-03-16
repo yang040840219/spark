@@ -1,17 +1,15 @@
 // scalastyle:off
 package org.apache.spark.sql.test
 
-import java.sql.Timestamp
 import java.util.Date
-import java.util.concurrent.TimeUnit
 
 import com.JsonUtil
 import org.apache.spark.SparkEnv
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types.{ArrayType, DateType, IntegerType, StringType, StructField, StructType, TimestampType}
+import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Encoders, Log, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
-import org.apache.spark.sql.functions.{col, countDistinct, udf}
 
 class DataFrameSuite extends AnyFunSuite with Log {
   

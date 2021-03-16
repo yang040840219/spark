@@ -34,7 +34,6 @@ class InterpreterVisitor(variables: Map[String, Any]) extends CalculatorBaseVisi
         val right = visit(ctx.multOrDiv())
         (left, right) match {
             case (l: Int, r: Int) => l + r
-            case (l: Int, r: Int) => l + r
             case (l: Double, r: Int) => l + r
             case (l: Double, r: Double) => l + r
             case _ => throw new IllegalArgumentException()

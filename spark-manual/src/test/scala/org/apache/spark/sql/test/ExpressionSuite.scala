@@ -9,13 +9,13 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.analysis.UnresolvedAttribute
 import org.apache.spark.sql.catalyst.dsl.expressions._
 import org.apache.spark.sql.catalyst.expressions.aggregate._
-import org.apache.spark.sql.catalyst.expressions.codegen.{CodeAndComment, CodeFormatter, CodegenContext, GenerateMutableProjection, UnsafeRowWriter}
+import org.apache.spark.sql.catalyst.expressions.codegen._
 import org.apache.spark.sql.catalyst.expressions.{Add, Attribute, AttributeReference, AttributeSet, ExprId, Expression, Length, Literal, MutableProjection, Substring, UnsafeRow}
 import org.apache.spark.sql.catalyst.{CatalystTypeConverters, InternalRow}
 import org.apache.spark.sql.execution.aggregate.TungstenAggregationIterator
 import org.apache.spark.sql.execution.metric.SQLMetrics
 import org.apache.spark.sql.internal.SQLConf
-import org.apache.spark.sql.types.{ByteType, IntegerType, LongType, StringType}
+import org.apache.spark.sql.types.{IntegerType, LongType, StringType}
 import org.apache.spark.unsafe.types.UTF8String
 import org.apache.spark.{SparkFunSuite, TaskContext, TaskContextImpl}
 

@@ -4,13 +4,10 @@ package org.apache.spark.parquet
 import java.net.URI
 import java.util.concurrent.{Callable, Executors, TimeUnit}
 
-import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.spark.sql.functions.input_file_name
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
-import org.apache.spark.sql.functions.input_file_name
-
-import collection.JavaConverters._
-import scala.collection.mutable.ListBuffer
 
 class SizeSuite extends AnyFunSuite {
 

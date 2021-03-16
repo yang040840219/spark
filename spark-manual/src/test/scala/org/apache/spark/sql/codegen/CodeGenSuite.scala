@@ -52,6 +52,7 @@ class CodeGenSuite extends SparkFunSuite {
         val y = new LiteralNode(2)
         (x.getType(), y.getType()) match {
             case (DataType.INT, DataType.INT) => println("hello")
+            case (_, _) => println("other")
         }
     }
 

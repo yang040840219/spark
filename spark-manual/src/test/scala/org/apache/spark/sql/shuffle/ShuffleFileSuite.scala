@@ -1,17 +1,15 @@
 // scalastyle:off
 package org.apache.spark.sql.shuffle
 
-import java.io.{DataInputStream, File, ObjectInputStream}
+import java.io.{DataInputStream, File}
 import java.nio.channels.Channels
 import java.nio.file.Files
 
-import org.apache.spark.io.CompressionCodec
-import org.apache.spark.{HashPartitioner, SparkConf, SparkEnv}
 import org.apache.spark.network.buffer.FileSegmentManagedBuffer
 import org.apache.spark.network.netty.SparkTransportConf
 import org.apache.spark.serializer.{JavaSerializer, KryoSerializer, SerializerManager}
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.ShuffleBlockId
+import org.apache.spark.{HashPartitioner, SparkConf}
 import org.scalatest.funsuite.AnyFunSuite
 
 

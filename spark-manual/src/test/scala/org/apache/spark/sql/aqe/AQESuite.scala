@@ -9,8 +9,6 @@ import org.apache.spark.scheduler.{SparkListener, SparkListenerEvent}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.execution.ui.SparkListenerSQLAdaptiveExecutionUpdate
 
-import scala.util.Random
-
 case class EntryKV(key: Int, value: String)
 
 class AQESuite extends SparkFunSuite {

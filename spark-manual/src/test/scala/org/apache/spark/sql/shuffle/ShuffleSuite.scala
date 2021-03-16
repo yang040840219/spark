@@ -2,10 +2,8 @@
 package org.apache.spark.sql.shuffle
 
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 import org.apache.commons.io.FileUtils
-import org.apache.spark.HashPartitioner
 import org.apache.spark.sql.{Log, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
 

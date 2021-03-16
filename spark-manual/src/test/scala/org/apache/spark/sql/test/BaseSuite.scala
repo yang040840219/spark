@@ -7,7 +7,6 @@ import java.util.regex.Pattern
 import org.apache.spark.SparkFunSuite
 import org.apache.spark.sql.Print
 import org.apache.spark.util.UninterruptibleThread
-import org.mockito.ArgumentMatchers.{eq => meq}
 import org.mockito.Mockito
 import org.mockito.Mockito.{mock, spy, when}
 

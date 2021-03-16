@@ -1,7 +1,7 @@
 // scalastyle:off
 package org.apache.spark.sql.test
 
-import org.apache.spark.sql.{Encoder, Log, SaveMode, SparkSession}
+import org.apache.spark.sql.{Log, SaveMode, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
 
 /**

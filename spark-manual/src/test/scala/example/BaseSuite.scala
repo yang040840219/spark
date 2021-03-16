@@ -1,7 +1,6 @@
 // scalastyle:off
 package example
 
-import java.util
 import java.util.concurrent.{Callable, Executors, TimeUnit}
 
 import org.apache.spark.sql.Log
@@ -9,8 +8,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import sun.misc.Unsafe
 
 import scala.collection.immutable
-import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.ListBuffer
 
 class BaseSuite extends AnyFunSuite with Log {
 

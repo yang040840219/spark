@@ -6,7 +6,7 @@ import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 import com.codahale.metrics.MetricRegistry
-import com.izettle.metrics.influxdb.{InfluxDbHttpSender, InfluxDbReporter, InfluxDbSender}
+import com.izettle.metrics.influxdb.{InfluxDbHttpSender, InfluxDbSender}
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.{SecurityManager, SparkConf, SparkEnv}
 import org.apache.spark.metrics.MetricsSystem

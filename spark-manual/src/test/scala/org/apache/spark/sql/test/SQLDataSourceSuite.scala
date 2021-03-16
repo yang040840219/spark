@@ -4,20 +4,16 @@ package org.apache.spark.sql.test
 
 import java.util.concurrent.TimeUnit
 
-import org.apache.spark.{SparkConf, SparkFunSuite}
-import org.apache.spark.sql.{SaveMode, SparkSession}
-import org.apache.spark.sql.catalyst.expressions.UnsafeRow
-import org.apache.spark.sql.catalyst.expressions.aggregate.Count
 import org.apache.spark.sql.catalyst.plans.logical.Aggregate
 import org.apache.spark.sql.execution.aggregate.HashAggregateExec
 import org.apache.spark.sql.execution.exchange.ShuffleExchangeExec
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
-import org.apache.spark.unsafe.Platform
+import org.apache.spark.sql.{SaveMode, SparkSession}
+import org.apache.spark.{SparkConf, SparkFunSuite}
 
 
-// scalastyle:off
 class SQLDataSourceSuite extends SparkFunSuite {
 
     def withSparkSession(f: SparkSession => Unit) : Unit = {
