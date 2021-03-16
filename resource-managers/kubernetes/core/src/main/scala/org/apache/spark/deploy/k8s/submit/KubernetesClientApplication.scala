@@ -27,7 +27,7 @@ import io.fabric8.kubernetes.api.model._
 import io.fabric8.kubernetes.client.{KubernetesClient, Watch}
 import io.fabric8.kubernetes.client.Watcher.Action
 
-import org.apache.spark.SparkConf
+import org.apache.spark.{SparkConf, SparkException}
 import org.apache.spark.deploy.SparkApplication
 import org.apache.spark.deploy.k8s._
 import org.apache.spark.deploy.k8s.Config._
@@ -162,12 +162,24 @@ private[spark] class Client(
         // Break the while loop if the pod is completed or we don't want to wait
         if(watcher.watchOrStop(sId)) {
           watch.close()
+		  val statuses = podWithName.get().getStatus.getContainerStatuses
+		  statuses.asScala.foreach(status => parseStatusCode(status))
           break
         }
       }
     }
   }
+  
+  def parseStatusCode(containerStatus: ContainerStatus): Unit = {
+	val exitCode = containerStatus.getState.getTerminated.getExitCode
+	logInfo(s"Container exit $exitCode")
+	if(exitCode != 0) {
+	  throw new SparkException(s"UnExcepted container exit status $exitCode")
+	}
+  }
 }
+
+
 
 /**
  * Main class and entry point of application submission in KUBERNETES mode.
