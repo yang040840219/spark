@@ -19,7 +19,6 @@ package org.apache.spark.sql.hive.thriftserver
 
 import java.util.regex.Pattern
 
-import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hive.service.cli._
 import org.apache.hive.service.cli.operation.GetSchemasOperation
