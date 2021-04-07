@@ -5,15 +5,17 @@ package org.apache.spark.streaming
 import java.util.concurrent.TimeUnit
 import java.util.{Locale, Properties, TimeZone}
 
+import com.JsonUtil
 import org.apache.commons.lang3.StringUtils
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.spark.SparkFunSuite
-import org.apache.spark.sql.functions.{col, from_json}
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.streaming.StreamingQueryListener.{QueryProgressEvent, QueryStartedEvent, QueryTerminatedEvent}
 import org.apache.spark.sql.streaming.{OutputMode, StreamingQueryListener, Trigger}
-import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.types.TimestampType
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 import org.joda.time.format.DateTimeFormat
 
 import scala.collection.JavaConverters._
@@ -232,39 +234,65 @@ class StreamingSuite extends SparkFunSuite {
 	
   }
   
+  test("read schema") {
+	val path = "file:///opt/data/spark/delta/t_m"
+	val spark = SparkSession.builder().master("local[2]").getOrCreate()
+	val df = spark.read.option("mergeSchema", "true").load(path)
+	df.printSchema()
+	df.show()
+  }
+  
   test("streaming schema evolution") {
 	val spark = SparkSession.builder().master("local[4]")
 	  .appName("streaming schema evolution")
 	  .config(SQLConf.SHUFFLE_PARTITIONS.key, 3)
-	  .config(SQLConf.WHOLESTAGE_CODEGEN_ENABLED.key, "false")
-	  .config(SQLConf.ADAPTIVE_EXECUTION_ENABLED.key, "false")
+	  .config(SQLConf.WHOLESTAGE_CODEGEN_ENABLED.key, "true")
 	  .config("spark.sql.streaming.schemaInference", "false")
 	  .getOrCreate()
 	
 	import spark.implicits._
 	
 	val lines = spark.readStream.format("socket").option("host", "localhost")
-	  .option("port", "9999").load().as[String]
+	  .option("port", "9999").load().as[String].toDF("message")
 	
-	val schema = StructType(Seq(
-	  StructField("name", StringType),
-	  StructField("age", IntegerType),
-	  StructField("age", IntegerType)
-	))
+	val df = lines.map(row => {
+	  val message = row.getString(0)
+	  val map = JsonUtil.json2object[Map[String, Any]](message)
+	  val time = map.getOrElse("time", "").toString
+	  (time, message)
+	}).toDF("_timestamp", "message")
+  	.withColumn("_watermark", col("_timestamp").cast(TimestampType))
 	
-	val df = lines.select(from_json(col("value"), schema).as("data"))
-	  .select("data.*")
+	val watermarkDF = df.withWatermark("_watermark", "1 minute")
 	
-	val filter = df
-	
-	val query = filter.writeStream
+	val writeStream = watermarkDF.writeStream
 	  .foreachBatch({
 		(batchDF: DataFrame, batchId: Long) => {
-		  batchDF.show(truncate = false)
+		  if (batchDF.isEmpty) {
+			println("empty !")
+		  } else {
+			batchDF.take(1)
+			val path = "file:///opt/data/spark/delta/t_m"
+			val sparkSession = batchDF.sparkSession
+			val fs = FileSystem.get(sparkSession.sparkContext.hadoopConfiguration)
+			val schemaDF = spark.read.json(batchDF.map(row => row.getAs[String]("message")))
+			// 解析出日期，重新分区
+			schemaDF.printSchema()
+			val mode = if (fs.exists(new Path(path))) {
+			  SaveMode.Append
+			} else {
+			  SaveMode.Overwrite
+			}
+			schemaDF.write.format("parquet").mode(mode).save(path)
+		  }
 		}
 	  })
-	  .start()
 	
+	// val writeStream = df.writeStream.format("console")
+	
+	writeStream.option("checkpointLocation", "file:///opt/data/spark/delta/checkpoint")
+	writeStream.trigger(Trigger.ProcessingTime(5, TimeUnit.SECONDS))
+	val query = writeStream.start()
 	query.awaitTermination()
 	
 	

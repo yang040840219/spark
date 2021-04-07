@@ -3,6 +3,8 @@ package org.apache.spark.deploy
 
 
 import org.apache.spark.SparkFunSuite
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.count
 
 class SimpleK8s extends SparkFunSuite {
   
@@ -21,6 +23,21 @@ class SimpleK8s extends SparkFunSuite {
 	println(childArgs)
 	println(conf.get("spark.master"))
 	
+  }
+  
+  
+  test("exception exit") {
+	val spark = SparkSession.builder().master("local[2]").getOrCreate()
+	import spark.implicits._
+	val df = (0 until 100000).toDF("id").selectExpr("id % 5 as key", "id%10 as value")
+	  .groupBy("key").agg(count("value1").as("cnt"))
+	  .repartition(1).mapPartitions(iter => {
+	  iter.map(row => {
+		(row.getAs[Int]("key"), row.getAs[Long]("cnt"))
+	  })
+	}).toDF("key", "value")
+	df.show()
+	spark.stop()
   }
   
 }

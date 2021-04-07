@@ -119,7 +119,6 @@ class StateStoreRDD[T: ClassTag, U: ClassTag](
 
   override def compute(partition: Partition, ctxt: TaskContext): Iterator[U] = {
     val storeProviderId = getStateProviderId(partition)
-    logError(s"storeProviderId: ${storeProviderId}")
     val store = StateStore.get(
       storeProviderId, keySchema, valueSchema, indexOrdinal, storeVersion,
       storeConf, hadoopConfBroadcast.value.value)

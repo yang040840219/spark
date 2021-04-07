@@ -1,6 +1,7 @@
 // scalastyle:off
 package org.apache.spark.sql.test
 
+import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
@@ -114,5 +115,30 @@ class BaseSuite extends SparkFunSuite {
 	//		when(mockLoginService.login(meq(form))).thenReturn(true)
 	//		println(mockLoginService.login(form))
 	
+  }
+  
+  
+  test("function") {
+	
+	def reduce(function: (Int, Int) => Int): Unit = {
+	  val r = function(1, 2)
+	  println(s"result:$r")
+	}
+	
+	reduce({case (x1:Int, x2:Int) => {
+	    x1 + x2
+	}})
+	
+	reduce((v1:Int, v2:Int) => {
+	   v1 + v2
+	})
+  }
+  
+  test("date format") {
+	val f = "EEE MMMM d HH:mm:ss Z yyyy"
+	val str = "Mon Mar 29 18:03:02 CST 2021"
+	val format = new SimpleDateFormat(f)
+	val d = format.parse(str)
+	println(d)
   }
 }
